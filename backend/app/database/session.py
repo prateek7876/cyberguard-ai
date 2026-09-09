@@ -12,9 +12,11 @@ class Base(DeclarativeBase):
     pass
 
 
-# Neon/PostgreSQL URLs commonly contain sslmode=require.
-# asyncpg expects SSL configuration through connect_args instead.
+# Normalize PostgreSQL URL for SQLAlchemy async + asyncpg.
 database_url = make_url(settings.database_url)
+
+if database_url.drivername in ("postgresql", "postgresql+psycopg2"):
+    database_url = database_url.set(drivername="postgresql+asyncpg")
 
 connect_args = {}
 

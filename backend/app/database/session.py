@@ -23,7 +23,7 @@ connect_args = {}
 sslmode = database_url.query.get("sslmode")
 
 if sslmode:
-    database_url = database_url.difference_update_query(["sslmode"])
+    database_url = database_url.difference_update_query(["sslmode", "channel_binding"])
 
     if sslmode in ("require", "verify-ca", "verify-full"):
         connect_args["ssl"] = ssl.create_default_context()

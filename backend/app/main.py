@@ -23,9 +23,17 @@ app.add_exception_handler(
     _rate_limit_exceeded_handler,
 )
 
+allowed_origins = list(settings.cors_origin_list)
+
+# Production frontend
+if settings.environment == "production":
+    allowed_origins.append("https://cyberguard-ai-amber.vercel.app")
+
+allowed_origins = list(dict.fromkeys(allowed_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origin_list,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],

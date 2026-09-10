@@ -3,7 +3,7 @@ from logging.config import fileConfig
 import ssl
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection, make_url
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
 
 from app.core.config import settings
@@ -18,22 +18,31 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
-def get_migration_url():
+def get_migration_config():
     database_url = make_url(settings.database_url)
 
     if database_url.drivername in ("postgresql", "postgresql+psycopg2"):
         database_url = database_url.set(drivername="postgresql+asyncpg")
 
+    sslmode = database_url.query.get("sslmode")
+
     database_url = database_url.difference_update_query(
         ["sslmode", "channel_binding"]
     )
 
-    return database_url
+    connect_args = {}
+
+    if sslmode in ("require", "verify-ca", "verify-full"):
+        connect_args["ssl"] = ssl.create_default_context()
+
+    return database_url, connect_args
 
 
 def run_migrations_offline() -> None:
+    database_url, _ = get_migration_config()
+
     context.configure(
-        url=str(get_migration_url()),
+        url=str(database_url),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -55,15 +64,13 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    configuration = config.get_section(config.config_ini_section, {})
+    database_url, connect_args = get_migration_config()
 
-    database_url = get_migration_url()
-    configuration["sqlalchemy.url"] = str(database_url)
-
-    connectable = async_engine_from_config(
-        configuration,
-        prefix="sqlalchemy.",
+    connectable = create_async_engine(
+        database_url,
+        echo=False,
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:

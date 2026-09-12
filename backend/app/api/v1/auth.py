@@ -96,7 +96,7 @@ async def get_me(
         usage_count = current_user.monthly_scan_count
         usage_month = current_user.usage_month
 
-    limit = 500 if current_user.plan.lower() == "pro" else 25
+    limit = 500 if current_user.plan.lower() == "pro" else 999999
 
     return MeResponse(
         user_id=str(current_user.id),

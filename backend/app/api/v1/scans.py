@@ -250,7 +250,7 @@ def build_recommendations(
 
 
 
-FREE_SCAN_LIMIT = 25
+FREE_SCAN_LIMIT = 999999
 PRO_SCAN_LIMIT = 500
 
 

@@ -40,9 +40,10 @@ export default function AdminPage() {
     setMessage("");
 
     try {
-      const token = getToken();
+      const token = localStorage.getItem("cyberguard_admin_token");
 
       if (!token) {
+        window.location.href = "/admin/login";
         throw new Error("Please login again");
       }
 
@@ -95,7 +96,7 @@ export default function AdminPage() {
     success: string
   ) => {
     try {
-      const token = getToken();
+      const token = localStorage.getItem("cyberguard_admin_token");
 
       const res = await fetch(`${API_URL}${url}`, {
         method: "POST",
@@ -166,12 +167,24 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <button
-            onClick={load}
-            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10"
-          >
-            ↻ Refresh
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={load}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-white/10"
+            >
+              ↻ Refresh
+            </button>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem("cyberguard_admin_token");
+                window.location.href = "/admin/login";
+              }}
+              className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-300 hover:bg-red-500/20"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 

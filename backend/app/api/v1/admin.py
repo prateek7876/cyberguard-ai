@@ -1,4 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy import select
+from app.core.security import verify_password, create_access_token
+from app.models.user import User
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,6 +10,45 @@ from app.core.auth import get_current_user
 from app.database.session import get_db
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+class AdminLoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+@router.post("/login")
+async def admin_login(
+    payload: AdminLoginRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(User).where(User.email == payload.email.lower().strip())
+    )
+    user = result.scalar_one_or_none()
+
+    if not user or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin credentials",
+        )
+
+    admin_result = await db.execute(
+        text("SELECT is_admin FROM users WHERE id = :id"),
+        {"id": str(user.id)},
+    )
+
+    if not admin_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+
+    return {
+        "access_token": create_access_token(str(user.id)),
+        "token_type": "bearer",
+        "is_admin": True,
+    }
+
 
 
 async def require_admin(

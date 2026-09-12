@@ -53,8 +53,8 @@ async def admin_stats(
     s = scans.mappings().one()
 
     return {
-        "users": dict(u._mapping),
-        "scans": dict(s._mapping),
+        "users": dict(u),
+        "scans": dict(s),
     }
 
 

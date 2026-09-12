@@ -71,10 +71,12 @@ from app.api.v1.scan_details import router as scan_details_router
 from app.api.v1.history import router as history_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.payments import router as payments_router
+from app.api.v1 import admin
 
 app.include_router(scans_router, prefix="/api/v1")
 app.include_router(scan_pdf_router, prefix="/api/v1")
 app.include_router(scan_details_router, prefix="/api/v1")
 app.include_router(history_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(admin.router, prefix="/api/v1")
 app.include_router(payments_router, prefix="/api/v1")

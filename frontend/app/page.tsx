@@ -701,11 +701,11 @@ export default function Home() {
                 </div>
 
                 <h3 className="mt-2 text-xl font-bold text-white">
-                  {usage.monthly_scan_count} / {usage.monthly_scan_limit} scans used
+                  {usage.monthly_scan_count} / {usage.monthly_scan_limit === 999999 ? "Unlimited" : usage.monthly_scan_limit} scans used
                 </h3>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  {usage.scans_remaining} scans remaining this month
+                  {usage.scans_remaining === 999999 ? "Unlimited" : usage.scans_remaining} scans remaining this month
                 </p>
               </div>
 
@@ -713,12 +713,14 @@ export default function Home() {
                 <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-wider">
                   <span className="text-slate-600">Monthly usage</span>
                   <span className="text-slate-500">
-                    {Math.round(
-                      Math.min(
-                        (usage.monthly_scan_count / usage.monthly_scan_limit) * 100,
-                        100
-                      )
-                    )}%
+                    {usage.monthly_scan_limit === 999999
+                      ? "Unlimited"
+                      : `${Math.round(
+                          Math.min(
+                            (usage.monthly_scan_count / usage.monthly_scan_limit) * 100,
+                            100
+                          )
+                        )}%`}
                   </span>
                 </div>
 
@@ -726,10 +728,12 @@ export default function Home() {
                   <div
                     className="h-full rounded-full bg-blue-400 transition-all duration-500"
                     style={{
-                      width: `${Math.min(
-                        (usage.monthly_scan_count / usage.monthly_scan_limit) * 100,
-                        100
-                      )}%`,
+                      width: usage.monthly_scan_limit === 999999
+                        ? "0%"
+                        : `${Math.min(
+                            (usage.monthly_scan_count / usage.monthly_scan_limit) * 100,
+                            100
+                          )}%`,
                     }}
                   />
                 </div>

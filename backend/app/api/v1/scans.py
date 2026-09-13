@@ -22,6 +22,45 @@ router = APIRouter(prefix="/scans", tags=["Scans"])
 limiter = Limiter(key_func=get_remote_address)
 
 
+
+def validate_scan_input(scan_type: str, input_data: str) -> str | None:
+    value = input_data.strip()
+
+    if scan_type == "url":
+        from urllib.parse import urlparse
+
+        try:
+            parsed = urlparse(value)
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                return "Invalid URL. Please enter a valid HTTP or HTTPS URL."
+            if any(ch.isspace() for ch in value):
+                return "Invalid URL. URL cannot contain spaces."
+        except ValueError:
+            return "Invalid URL. Please enter a valid HTTP or HTTPS URL."
+
+    elif scan_type == "ip":
+        try:
+            ipaddress.ip_address(value)
+        except ValueError:
+            return "Invalid IP address. Please enter a valid IPv4 or IPv6 address."
+
+    elif scan_type == "hash":
+        hash_lengths = {32: "MD5", 40: "SHA-1", 64: "SHA-256"}
+        if len(value) not in hash_lengths or not re.fullmatch(r"[a-fA-F0-9]+", value):
+            return "Invalid file hash. Enter a valid MD5, SHA-1, or SHA-256 hash."
+
+    elif scan_type == "email":
+        # This scanner analyzes phishing-email content, not an email address.
+        if len(value) < 10:
+            return "Invalid email content. Please provide the complete email content for phishing analysis."
+
+    elif scan_type == "log":
+        if len(value) < 5:
+            return "Invalid log input. Please provide meaningful log content."
+
+    return None
+
+
 def get_risk_level(score: int) -> str:
     if score <= 20:
         return "Low"
@@ -303,6 +342,13 @@ async def create_scan(
         raise HTTPException(
             status_code=400,
             detail="Input cannot be empty",
+        )
+
+    validation_error = validate_scan_input(request.scan_type, input_data)
+    if validation_error:
+        raise HTTPException(
+            status_code=422,
+            detail=validation_error,
         )
 
     monthly_limit = await enforce_scan_quota(db, current_user)

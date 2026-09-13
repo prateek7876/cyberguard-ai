@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_URL, saveSession } from "../lib-auth";
+import { API_URL } from "../lib-auth";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -39,8 +39,7 @@ export default function SignupPage() {
         throw new Error(data.detail || "Signup failed.");
       }
 
-      saveSession(data.access_token, data.email);
-      router.push("/");
+      router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed.");
     } finally {

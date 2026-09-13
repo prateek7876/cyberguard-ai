@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     request_timeout: int = 15
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
+    resend_api_key: str = ""
+    email_from: str = "CyberGuard AI <onboarding@resend.dev>"
+    frontend_url: str = "http://localhost:3000"
+    verification_expiry_minutes: int = 30
 
     @property
     def cors_origin_list(self) -> List[str]:
